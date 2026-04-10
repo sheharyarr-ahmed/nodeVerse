@@ -8,6 +8,9 @@ app.get('/', (req, res) => {
     .json({ message: 'Hello from the sever side!', app: 'natours' });
 });
 
+app.post('/', (res, res) => {
+  res.send('you canpost to thsi endpoint...');
+});
 const port = 3000;
 
 app.listen(port, () => {
