@@ -1,6 +1,6 @@
-const fs = require('fs');
+const Tour = require('./../models/tourModel');
 
-const toursPath = `${__dirname}/../dev-data/data/tours-simple.json`;
+// const toursPath = `${__dirname}/../dev-data/data/tours-simple.json`;
 const tours = JSON.parse(fs.readFileSync(toursPath, 'utf-8'));
 
 exports.checkID = (req, res, next, val) => {
