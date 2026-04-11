@@ -13,10 +13,10 @@
   "license": "ISC",
   "author": "",
   "type": "commonjs",
-  "main": "starter/app.js",
+  "main": "starter/server.js",
   "scripts": {
-    "dev": "nodemon starter/app.js",
-    "start": "node starter/app.js",
+    "dev": "nodemon starter/server.js",
+    "start": "node starter/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
