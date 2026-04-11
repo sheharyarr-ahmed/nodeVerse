@@ -12,6 +12,22 @@ const allowedSortFields = [
   'maxGroupSize',
   'createdAt',
 ];
+const allowedSelectFields = [
+  'name',
+  'duration',
+  'maxGroupSize',
+  'difficulty',
+  'ratingsAverage',
+  'ratingsQuantity',
+  'price',
+  'priceDiscount',
+  'summary',
+  'description',
+  'imageCover',
+  'images',
+  'createdAt',
+  'startDates',
+];
 
 const normalizeSortField = (field) => {
   const direction = field.startsWith('-') ? '-' : '';
@@ -20,6 +36,12 @@ const normalizeSortField = (field) => {
   if (!allowedSortFields.includes(fieldName)) return null;
 
   return `${direction}${fieldName === 'ratings' ? 'ratingsAverage' : fieldName}`;
+};
+
+const normalizeSelectField = (field) => {
+  if (!allowedSelectFields.includes(field)) return null;
+
+  return field === 'images' ? '+images' : field;
 };
 
 const buildToursQuery = (queryString) => {
@@ -54,7 +76,13 @@ const buildToursQuery = (queryString) => {
   }
 
   if (queryString.fields) {
-    query = query.select(queryString.fields.split(',').join(' '));
+    const fields = queryString.fields
+      .split(',')
+      .map(normalizeSelectField)
+      .filter(Boolean)
+      .join(' ');
+
+    query = query.select(fields || '-__v');
   } else {
     query = query.select('-__v');
   }
