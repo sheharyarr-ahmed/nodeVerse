@@ -16,13 +16,14 @@
   "main": "starter/server.js",
   "scripts": {
     "dev": "nodemon starter/server.js",
-    "start:dev": "nodemon starter/server.js",
+    "start": "nodemon starter/server.js",
     "start:prod": "NODE_ENV=production nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "dotenv": "^17.4.1",
     "express": "^4.22.1",
+    "mongodb": "^7.1.1",
     "mongoose": "^9.4.1",
     "morgan": "^1.10.1"
   }
