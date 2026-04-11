@@ -1,6 +1,26 @@
 const Tour = require('../models/tourModel');
 
 const allowedOperators = ['gte', 'gt', 'lte', 'lt'];
+const allowedSortFields = [
+  'name',
+  'price',
+  'ratings',
+  'ratingsAverage',
+  'ratingsQuantity',
+  'duration',
+  'difficulty',
+  'maxGroupSize',
+  'createdAt',
+];
+
+const normalizeSortField = (field) => {
+  const direction = field.startsWith('-') ? '-' : '';
+  const fieldName = field.replace(/^-/, '');
+
+  if (!allowedSortFields.includes(fieldName)) return null;
+
+  return `${direction}${fieldName === 'ratings' ? 'ratingsAverage' : fieldName}`;
+};
 
 const buildToursQuery = (queryString) => {
   const queryObj = { ...queryString };
@@ -22,7 +42,13 @@ const buildToursQuery = (queryString) => {
   });
 
   if (queryString.sort) {
-    query = query.sort(queryString.sort.split(',').join(' '));
+    const sortBy = queryString.sort
+      .split(',')
+      .map(normalizeSortField)
+      .filter(Boolean)
+      .join(' ');
+
+    query = query.sort(sortBy || '-createdAt');
   } else {
     query = query.sort('-createdAt');
   }
