@@ -44,6 +44,15 @@ const normalizeSelectField = (field) => {
   return field === 'images' ? '+images' : field;
 };
 
+const getPaginationOptions = (queryString) => {
+  const page = queryString.page * 1 || 1;
+  const requestedLimit = queryString.limit * 1 || 10;
+  const limit = Math.min(requestedLimit, 10);
+  const skip = (page - 1) * limit;
+
+  return { page, limit, skip };
+};
+
 const buildToursQuery = (queryString) => {
   const queryObj = { ...queryString };
   const excludedFields = ['page', 'sort', 'limit', 'fields'];
@@ -87,9 +96,7 @@ const buildToursQuery = (queryString) => {
     query = query.select('-__v');
   }
 
-  const page = queryString.page * 1 || 1;
-  const limit = queryString.limit * 1 || 100;
-  const skip = (page - 1) * limit;
+  const { limit, skip } = getPaginationOptions(queryString);
 
   return query.skip(skip).limit(limit);
 };
@@ -107,6 +114,19 @@ exports.checkBody = (req, res, next) => {
 
 exports.getAllTours = async (req, res) => {
   try {
+    const { page, skip } = getPaginationOptions(req.query);
+
+    if (req.query.page) {
+      const numTours = await Tour.countDocuments();
+
+      if (skip >= numTours) {
+        return res.status(404).json({
+          status: 'fail',
+          message: `Page ${page} does not exist`,
+        });
+      }
+    }
+
     const tours = await buildToursQuery(req.query);
 
     res.status(200).json({
