@@ -212,9 +212,16 @@ exports.createTour = async (req, res) => {
       },
     });
   } catch (err) {
+    const message =
+      err.name === 'ValidationError'
+        ? Object.values(err.errors)
+            .map((el) => el.message)
+            .join('. ')
+        : err.message;
+
     res.status(400).json({
       status: 'fail',
-      message: err.message,
+      message,
     });
   }
 };
