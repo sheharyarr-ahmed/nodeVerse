@@ -1,16 +1,17 @@
 const AppError = require('../utils/appError');
 
-const handleCastErrorDB = (err) =>
-  new AppError('No tour found with that ID', 404);
+const handleCastErrorDB = (err) => new AppError('Invalid ID', 404);
 
 const handleDuplicateFieldsDB = (err) => {
-  const value =
-    err.keyValue && Object.values(err.keyValue).length > 0
-      ? Object.values(err.keyValue).join(', ')
-      : err.errmsg?.match(/(["'])(\\?.)*?\1/)?.[0] || 'unknown';
+  const duplicateFields = err.keyValue || {};
+  const duplicateEntries = Object.entries(duplicateFields)
+    .map(([field, value]) => `${field}: ${value}`)
+    .join(', ');
+  const duplicateValue =
+    duplicateEntries || err.errmsg?.match(/(["'])(\\?.)*?\1/)?.[0] || 'unknown';
 
   return new AppError(
-    `Duplicate field value: ${value}. Please use another value!`,
+    `Duplicate field value: ${duplicateValue}. Please use another value!`,
     400,
   );
 };
@@ -22,7 +23,7 @@ const handleValidationErrorDB = (err) => {
   return new AppError(message, 400);
 };
 
-const sendErrorDev = (err, res) => {
+const sendDetailedErrorDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
     error: err,
@@ -31,7 +32,8 @@ const sendErrorDev = (err, res) => {
   });
 };
 
-const sendErrorProd = (err, res) => {
+const sendFriendlyErrorProd = (err, res) => {
+  // Operational errors are trusted, expected errors we can show to users.
   if (err.isOperational) {
     return res.status(err.statusCode).json({
       status: err.status,
@@ -41,6 +43,7 @@ const sendErrorProd = (err, res) => {
 
   console.error('ERROR:', err);
 
+  // Programming or unknown errors should not leak stack traces in production.
   return res.status(500).json({
     status: 'error',
     message: 'Something went very wrong!',
@@ -52,6 +55,7 @@ const convertDatabaseError = (err) => {
     ...err,
     name: err.name,
     message: err.message,
+    stack: err.stack,
     code: err.code,
     errmsg: err.errmsg,
     keyValue: err.keyValue,
@@ -71,11 +75,11 @@ module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
-  const error = convertDatabaseError(err);
-
   if (process.env.NODE_ENV === 'development') {
-    sendErrorDev(error, res);
+    sendDetailedErrorDev(err, res);
   } else {
-    sendErrorProd(error, res);
+    const error = convertDatabaseError(err);
+
+    sendFriendlyErrorProd(error, res);
   }
 };
