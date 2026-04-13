@@ -18,7 +18,8 @@
     "dev": "nodemon starter/server.js",
     "start": "nodemon starter/server.js",
     "start:prod": "NODE_ENV=production nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "debug": "ndb server.js"
   },
   "dependencies": {
     "dotenv": "^17.4.1",
