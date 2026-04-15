@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
+const crypto = require('crypto');
 
 const AppError = require('../utils/appError');
 const User = require('../models/userModel');
@@ -43,6 +44,61 @@ exports.login = catchAsync(async (req, res, next) => {
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password', 401));
   }
+
+  const token = signToken(user._id);
+  user.password = undefined;
+
+  res.status(200).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
+  });
+});
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!user) {
+    return next(new AppError('There is no user with that email address.', 404));
+  }
+
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+
+  const resetURL = `${req.protocol}://${req.get(
+    'host',
+  )}/api/v1/users/resetPassword/${resetToken}`;
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Token generated successfully',
+    resetToken,
+    resetURL,
+  });
+});
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return next(new AppError('Token is invalid or has expired', 400));
+  }
+
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
 
   const token = signToken(user._id);
   user.password = undefined;
