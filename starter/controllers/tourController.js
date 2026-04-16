@@ -29,6 +29,7 @@ const allowedSelectFields = [
   'images',
   'createdAt',
   'startDates',
+  'guides',
 ];
 
 exports.checkBody = (req, res, next) => {
