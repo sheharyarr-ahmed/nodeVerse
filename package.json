@@ -19,10 +19,22 @@
     "start": "nodemon starter/server.js",
     "start:prod": "NODE_ENV=production nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "debug": "ndb server.js"
+    "debug": "ndb server.js",
+    "watch:js": "parcel watch starter/public/index.js --target browser --dist-dir starter/public/js/bundle --no-content-hash",
+    "build:js": "parcel build starter/public/index.js --target browser --dist-dir starter/public/js/bundle --no-content-hash"
+  },
+  "targets": {
+    "browser": {
+      "context": "browser",
+      "distDir": "starter/public/js/bundle",
+      "sourceMap": false
+    }
   },
   "dependencies": {
+    "@babel/polyfill": "^7.12.1",
+    "axios": "^1.15.0",
     "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.1",
     "express": "^4.22.1",
     "express-mongo-sanitize": "^2.2.0",
@@ -37,5 +49,8 @@
     "pug": "^3.0.4",
     "slugify": "^1.6.9",
     "xss-clean": "^0.1.4"
+  },
+  "devDependencies": {
+    "parcel": "^2.16.4"
   }
 }

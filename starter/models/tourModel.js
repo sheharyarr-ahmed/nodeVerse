@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const slugify = require('slugify');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -17,6 +18,7 @@ const tourSchema = new mongoose.Schema(
           'A tour name can only contain letters, spaces, apostrophes, and hyphens',
       },
     },
+    slug: String,
 
     duration: {
       type: Number,
@@ -141,6 +143,10 @@ const tourSchema = new mongoose.Schema(
 
 tourSchema.index({ price: 1, ratingsAverage: -1 });
 tourSchema.index({ startLocation: '2dsphere' });
+
+tourSchema.pre('save', function () {
+  this.slug = slugify(this.name, { lower: true });
+});
 
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;

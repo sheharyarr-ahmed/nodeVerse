@@ -6,9 +6,11 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
+const viewRouter = require('./routes/viewRoutes');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
@@ -18,7 +20,28 @@ const app = express();
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        baseUri: ["'self'"],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https://*.mapbox.com'],
+        scriptSrc: ["'self'", 'https://api.mapbox.com'],
+        styleSrc: [
+          "'self'",
+          'https://api.mapbox.com',
+          'https://fonts.googleapis.com',
+          "'unsafe-inline'",
+        ],
+        workerSrc: ["'self'", 'blob:'],
+        childSrc: ["'self'", 'blob:'],
+        connectSrc: ["'self'", 'https://*.mapbox.com'],
+      },
+    },
+  }),
+);
 
 console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === 'development') {
@@ -35,6 +58,7 @@ app.use('/api', limiter);
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+app.use(cookieParser());
 app.use(mongoSanitize());
 app.use(xss());
 app.use(
@@ -55,20 +79,12 @@ app.use((req, res, next) => {
   next();
 });
 
-const getHome = (req, res) => {
-  res.status(200).json({
-    message: 'Hello from the server side!',
-    app: 'natours',
-    toursUrl: '/api/v1/tours',
-  });
-};
-
-app.get('/', getHome);
-app.get('/base', (req, res) => {
-  res.status(200).render('base', {
-    title: 'Natours',
-  });
+app.use((req, res, next) => {
+  res.locals.mapboxAccessToken = process.env.MAPBOX_ACCESS_TOKEN || '';
+  next();
 });
+
+app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);

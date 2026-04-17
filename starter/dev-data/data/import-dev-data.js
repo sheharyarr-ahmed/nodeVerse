@@ -1,6 +1,7 @@
 const fs = require('fs');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const slugify = require('slugify');
 const Tour = require('./../../models/tourModel');
 const User = require('./../../models/userModel');
 const Review = require('./../../models/reviewModel');
@@ -30,7 +31,12 @@ mongoose
     console.error('DB connection failed:', err.message);
   });
 
-const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
+const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8')).map(
+  (tour) => ({
+    ...tour,
+    slug: slugify(tour.name, { lower: true }),
+  }),
+);
 const users = JSON.parse(fs.readFileSync(`${__dirname}/users.json`, 'utf-8'));
 const reviews = JSON.parse(
   fs.readFileSync(`${__dirname}/reviews.json`, 'utf-8'),
