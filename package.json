@@ -20,13 +20,15 @@
     "start:prod": "NODE_ENV=production nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "debug": "ndb server.js",
-    "watch:js": "parcel watch starter/public/index.js --target browser --dist-dir starter/public/js/bundle --no-content-hash",
-    "build:js": "parcel build starter/public/index.js --target browser --dist-dir starter/public/js/bundle --no-content-hash"
+    "watch:js": "parcel watch starter/public/index.js --target app --dist-dir starter/public/js/bundle --no-content-hash",
+    "build:js": "parcel build starter/public/index.js --target app --dist-dir starter/public/js/bundle --no-content-hash"
   },
   "targets": {
-    "browser": {
+    "app": {
       "context": "browser",
       "distDir": "starter/public/js/bundle",
+      "includeNodeModules": true,
+      "outputFormat": "global",
       "sourceMap": false
     }
   },
@@ -51,6 +53,7 @@
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
+    "buffer": "^6.0.3",
     "parcel": "^2.16.4"
   }
 }
