@@ -4,6 +4,15 @@ const handleCastErrorDB = (err) => new AppError('Invalid ID', 404);
 
 const handleDuplicateFieldsDB = (err) => {
   const duplicateFields = err.keyValue || {};
+  const duplicateFieldNames = Object.keys(duplicateFields);
+
+  if (
+    duplicateFieldNames.includes('tour') &&
+    duplicateFieldNames.includes('user')
+  ) {
+    return new AppError('You have already reviewed this tour.', 400);
+  }
+
   const duplicateEntries = Object.entries(duplicateFields)
     .map(([field, value]) => `${field}: ${value}`)
     .join(', ');

@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
@@ -13,6 +14,10 @@ const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 
 const app = express();
+
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+
 app.use(helmet());
 
 console.log(process.env.NODE_ENV);
@@ -28,6 +33,7 @@ const limiter = rateLimit({
 
 app.use('/api', limiter);
 
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(mongoSanitize());
 app.use(xss());
@@ -58,6 +64,11 @@ const getHome = (req, res) => {
 };
 
 app.get('/', getHome);
+app.get('/base', (req, res) => {
+  res.status(200).render('base', {
+    title: 'Natours',
+  });
+});
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);

@@ -59,6 +59,10 @@ const userSchema = new mongoose.Schema({
 
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
+  if (/^\$2[aby]\$\d{2}\$/.test(this.password)) {
+    this.passwordConfirm = undefined;
+    return;
+  }
 
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
@@ -66,9 +70,8 @@ userSchema.pre('save', async function () {
   if (!this.isNew) this.passwordChangedAt = Date.now() - 1000;
 });
 
-userSchema.pre(/^find/, function (next) {
+userSchema.pre(/^find/, function () {
   this.find({ active: { $ne: false } });
-  next();
 });
 
 userSchema.methods.correctPassword = async function (

@@ -1,4 +1,5 @@
 const Tour = require('../models/tourModel');
+const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
 
@@ -126,6 +127,94 @@ exports.getMonthlyPlan = catchAsync(async (req, res) => {
     results: plan.length,
     data: {
       plan,
+    },
+  });
+});
+
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+  const latitude = lat * 1;
+  const longitude = lng * 1;
+
+  if (!lat || !lng || Number.isNaN(latitude) || Number.isNaN(longitude)) {
+    return next(
+      new AppError(
+        'Please provide latitude and longitude in the format lat,lng.',
+        400,
+      ),
+    );
+  }
+
+  if (!['mi', 'km'].includes(unit)) {
+    return next(new AppError('Unit must be either mi or km.', 400));
+  }
+
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+
+  const tours = await Tour.find({
+    startLocation: {
+      $geoWithin: {
+        $centerSphere: [[longitude, latitude], radius],
+      },
+    },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      data: tours,
+    },
+  });
+});
+
+exports.getDistances = catchAsync(async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+  const latitude = lat * 1;
+  const longitude = lng * 1;
+
+  if (!lat || !lng || Number.isNaN(latitude) || Number.isNaN(longitude)) {
+    return next(
+      new AppError(
+        'Please provide latitude and longitude in the format lat,lng.',
+        400,
+      ),
+    );
+  }
+
+  if (!['mi', 'km'].includes(unit)) {
+    return next(new AppError('Unit must be either mi or km.', 400));
+  }
+
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+
+  const distances = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [longitude, latitude],
+        },
+        distanceField: 'distance',
+        distanceMultiplier: multiplier,
+      },
+    },
+    {
+      $project: {
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    results: distances.length,
+    unit,
+    data: {
+      data: distances,
     },
   });
 });
