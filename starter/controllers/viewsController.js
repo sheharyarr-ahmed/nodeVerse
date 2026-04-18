@@ -15,6 +15,16 @@ exports.getLoginForm = (req, res) => {
   });
 };
 
+exports.getAccount = (req, res) => {
+  if (!res.locals.user) {
+    return res.redirect('/login');
+  }
+
+  res.status(200).render('account', {
+    title: 'Your account',
+  });
+};
+
 exports.getOverview = catchAsync(async (req, res) => {
   const tours = await Tour.find();
   tours.forEach((tour) => {

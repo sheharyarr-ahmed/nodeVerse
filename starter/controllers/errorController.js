@@ -38,30 +38,53 @@ const handleJWTError = () =>
 const handleJWTExpiredError = () =>
   new AppError('Your token has expired. Please log in again.', 401);
 
-const sendDetailedErrorDev = (err, res) => {
-  res.status(err.statusCode).json({
-    status: err.status,
-    error: err,
-    message: err.message,
-    stack: err.stack,
+const isApiRequest = (req) => req.originalUrl.startsWith('/api');
+
+const sendDetailedErrorDev = (err, req, res) => {
+  if (isApiRequest(req)) {
+    return res.status(err.statusCode).json({
+      status: err.status,
+      error: err,
+      message: err.message,
+      stack: err.stack,
+    });
+  }
+
+  return res.status(err.statusCode).render('error', {
+    title: 'Something went wrong',
+    msg: err.message,
   });
 };
 
-const sendFriendlyErrorProd = (err, res) => {
+const sendFriendlyErrorProd = (err, req, res) => {
   // Operational errors are trusted, expected errors we can show to users.
   if (err.isOperational) {
-    return res.status(err.statusCode).json({
-      status: err.status,
-      message: err.message,
+    if (isApiRequest(req)) {
+      return res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message,
+      });
+    }
+
+    return res.status(err.statusCode).render('error', {
+      title: 'Something went wrong',
+      msg: err.message,
     });
   }
 
   console.error('ERROR:', err);
 
   // Programming or unknown errors should not leak stack traces in production.
-  return res.status(500).json({
-    status: 'error',
-    message: 'Something went very wrong!',
+  if (isApiRequest(req)) {
+    return res.status(500).json({
+      status: 'error',
+      message: 'Something went very wrong!',
+    });
+  }
+
+  return res.status(500).render('error', {
+    title: 'Something went wrong',
+    msg: 'Please try again later.',
   });
 };
 
@@ -93,10 +116,10 @@ module.exports = (err, req, res, next) => {
   err.status = err.status || 'error';
 
   if (process.env.NODE_ENV === 'development') {
-    sendDetailedErrorDev(err, res);
+    sendDetailedErrorDev(err, req, res);
   } else {
     const error = convertDatabaseError(err);
 
-    sendFriendlyErrorProd(error, res);
+    sendFriendlyErrorProd(error, req, res);
   }
 };

@@ -72,7 +72,7 @@ exports.logout = (req, res) => {
   res.clearCookie('jwt', { path: '/api/v1/users' });
 
   if (req.accepts(['json', 'html']) === 'html') {
-    return res.status(200).redirect('/');
+    return res.status(200).redirect('/login');
   }
 
   res.status(200).json({
