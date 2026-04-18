@@ -40,10 +40,14 @@ if (userDataForm) {
   userDataForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    updateSettings({
-      name: document.getElementById('name').value,
-      email: document.getElementById('email').value,
-    }, 'data');
+    const form = new FormData();
+    form.append('name', document.getElementById('name').value);
+    form.append('email', document.getElementById('email').value);
+
+    const photo = document.getElementById('photo').files[0];
+    if (photo) form.append('photo', photo);
+
+    updateSettings(form, 'data');
   });
 }
 

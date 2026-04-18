@@ -42,11 +42,22 @@ router.route('/:id').get(tourController.getTour);
 router.use(authController.protect);
 router.use(authController.restrictTo('admin', 'lead-guide'));
 
-router.route('/').post(tourController.checkBody, tourController.createTour);
+router
+  .route('/')
+  .post(
+    tourController.uploadTourImages,
+    tourController.resizeTourImages,
+    tourController.checkBody,
+    tourController.createTour,
+  );
 
 router
   .route('/:id')
-  .patch(tourController.updateTour)
+  .patch(
+    tourController.uploadTourImages,
+    tourController.resizeTourImages,
+    tourController.updateTour,
+  )
   .delete(
     authController.restrictTo('admin'),
     tourController.deleteTour,
