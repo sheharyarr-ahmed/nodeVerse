@@ -1,8 +1,20 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe');
 
+const Booking = require('../models/bookingModel');
 const Tour = require('../models/tourModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const factory = require('./handlerFactory');
+
+exports.createBookingCheckout = catchAsync(async (req, res, next) => {
+  const { tour, user, price } = req.query;
+
+  if (!tour || !user || !price) return next();
+
+  await Booking.create({ tour, user, price });
+
+  res.redirect(req.path);
+});
 
 exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   if (
@@ -12,13 +24,15 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     return next(new AppError('Stripe is not configured.', 500));
   }
 
+  const stripeClient = stripe(process.env.STRIPE_SECRET_KEY);
+
   const tour = await Tour.findById(req.params.tourId);
 
   if (!tour) {
     return next(new AppError('No tour found with that ID.', 404));
   }
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await stripeClient.checkout.sessions.create({
     payment_method_types: ['card'],
     success_url: `${req.protocol}://${req.get('host')}/?tour=${
       req.params.tourId
@@ -53,9 +67,8 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getAllBookings = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined.',
-  });
-};
+exports.getAllBookings = factory.getAll(Booking);
+exports.getBooking = factory.getOne(Booking);
+exports.createBooking = factory.createOne(Booking);
+exports.updateBooking = factory.updateOne(Booking);
+exports.deleteBooking = factory.deleteOne(Booking);

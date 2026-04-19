@@ -1,5 +1,6 @@
 const slugify = require('slugify');
 const Tour = require('../models/tourModel');
+const Booking = require('../models/bookingModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 
@@ -15,15 +16,23 @@ exports.getLoginForm = (req, res) => {
   });
 };
 
-exports.getAccount = (req, res) => {
+exports.getAccount = catchAsync(async (req, res) => {
   if (!res.locals.user) {
     return res.redirect('/login');
   }
 
+  const bookings = await Booking.find({ user: res.locals.user.id });
+  const tours = bookings.map((booking) => booking.tour).filter(Boolean);
+
+  tours.forEach((tour) => {
+    if (!tour.slug) tour.slug = slugify(tour.name, { lower: true });
+  });
+
   res.status(200).render('account', {
     title: 'Your account',
+    tours,
   });
-};
+});
 
 exports.getOverview = catchAsync(async (req, res) => {
   const tours = await Tour.find();

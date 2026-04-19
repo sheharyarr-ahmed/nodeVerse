@@ -1077,6 +1077,11 @@ body {
   grid-gap: 7rem;
 }
 
+.card-container--account {
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 4rem;
+}
+
 .card {
   border-radius: 3px;
   overflow: hidden;

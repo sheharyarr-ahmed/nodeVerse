@@ -3,6 +3,8 @@ html(lang='en')
   head
     meta(charset='UTF-8')
     meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    meta(name='mapbox-token' content=mapboxAccessToken)
+    meta(name='stripe-public-key' content=stripePublicKey)
 
     link(href='https://fonts.googleapis.com/css?family=Lato:300,300i,700' rel='stylesheet')
     link(href='https://api.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.css' rel='stylesheet')
@@ -19,6 +21,5 @@ html(lang='en')
     include partials/_footer
 
     script(src='https://api.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.js')
-    script.
-      window.MAPBOX_ACCESS_TOKEN = '!{mapboxAccessToken}';
+    script(src='https://js.stripe.com/v3/')
     script(src='/js/bundle/index.js')

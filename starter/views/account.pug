@@ -11,7 +11,7 @@ block content
                 use(xlink:href='/img/icons.svg#icon-settings')
               | Settings
           li
-            a(href='#')
+            a(href='#my-bookings')
               svg
                 use(xlink:href='/img/icons.svg#icon-briefcase')
               | My bookings
@@ -88,3 +88,50 @@ block content
               input#password-confirm.form__input(type='password' placeholder='Confirm password' required minlength='8')
             .form__group.right
               button.btn.btn--small.btn--green.btn--save-password(type='submit') Save password
+
+        .line
+
+        .user-view__form-container#my-bookings
+          h2.heading-secondary.ma-bt-md My booked tours
+          if tours && tours.length
+            .card-container.card-container--account
+              each tour in tours
+                .card
+                  .card__header
+                    .card__picture
+                      .card__picture-overlay &nbsp;
+                      img.card__picture-img(src=`/img/tours/${tour.imageCover}` alt=`${tour.name}`)
+
+                    h3.heading-tertirary
+                      span= tour.name
+
+                  .card__details
+                    h4.card__sub-heading #{tour.difficulty} #{tour.duration}-day tour
+                    p.card__text= tour.summary
+                    .card__data
+                      svg.card__icon
+                        use(xlink:href='/img/icons.svg#icon-map-pin')
+                      span= tour.startLocation.description
+                    .card__data
+                      svg.card__icon
+                        use(xlink:href='/img/icons.svg#icon-calendar')
+                      span= tour.startDates[0].toLocaleString('en-us', { month: 'long', year: 'numeric' })
+                    .card__data
+                      svg.card__icon
+                        use(xlink:href='/img/icons.svg#icon-flag')
+                      span #{tour.locations.length} stops
+                    .card__data
+                      svg.card__icon
+                        use(xlink:href='/img/icons.svg#icon-user')
+                      span #{tour.maxGroupSize} people
+
+                  .card__footer
+                    p
+                      span.card__footer-value $#{tour.price}
+                      span.card__footer-text per person
+                    p.card__ratings
+                      span.card__footer-value= tour.ratingsAverage
+                      span.card__footer-text rating (#{tour.ratingsQuantity})
+                    a.btn.btn--green.btn--small(href=`/tour/${tour.slug}`) Details
+          else
+            p You have not booked any tours yet.

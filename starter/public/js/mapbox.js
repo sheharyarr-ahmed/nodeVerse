@@ -2,10 +2,13 @@ const mapBox = document.getElementById('map');
 
 if (mapBox) {
   const locations = JSON.parse(mapBox.dataset.locations);
-  const accessToken = window.MAPBOX_ACCESS_TOKEN;
+  const accessToken = document.querySelector(
+    'meta[name="mapbox-token"]',
+  )?.content;
 
   if (!accessToken) {
-    throw new Error('Missing Mapbox access token');
+    console.error('Missing Mapbox access token');
+    return;
   }
 
   mapboxgl.accessToken = accessToken;

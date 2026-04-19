@@ -4,3 +4,4 @@ import './js/mapbox';
 import './js/login';
 import './js/logout';
 import './js/updateSettings';
+import './js/stripe';

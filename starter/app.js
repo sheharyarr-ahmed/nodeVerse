@@ -15,6 +15,7 @@ const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
+const bookingController = require('./controllers/bookingController');
 
 const app = express();
 
@@ -31,7 +32,7 @@ app.use(
         baseUri: ["'self'"],
         fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
         imgSrc: ["'self'", 'data:', 'blob:', 'https://*.mapbox.com'],
-        scriptSrc: ["'self'", 'https://api.mapbox.com'],
+        scriptSrc: ["'self'", 'https://api.mapbox.com', 'https://js.stripe.com'],
         styleSrc: [
           "'self'",
           'https://api.mapbox.com',
@@ -40,7 +41,8 @@ app.use(
         ],
         workerSrc: ["'self'", 'blob:'],
         childSrc: ["'self'", 'blob:'],
-        connectSrc: ["'self'", 'https://*.mapbox.com'],
+        frameSrc: ["'self'", 'https://js.stripe.com'],
+        connectSrc: ["'self'", 'https://*.mapbox.com', 'https://api.stripe.com'],
       },
     },
   }),
@@ -84,10 +86,11 @@ app.use((req, res, next) => {
 
 app.use((req, res, next) => {
   res.locals.mapboxAccessToken = process.env.MAPBOX_ACCESS_TOKEN || '';
+  res.locals.stripePublicKey = process.env.STRIPE_PUBLIC_KEY || '';
   next();
 });
 
-app.use('/', viewRouter);
+app.use('/', bookingController.createBookingCheckout, viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
