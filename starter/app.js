@@ -67,6 +67,19 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.post(
+  '/',
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout,
+);
+
+app.post(
+  '/webhook-checkout',
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout,
+);
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(mongoSanitize());
